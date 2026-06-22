@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Насколько ты нормис?</title>
+
+<style>
+body{
+    margin:0;
+    background:#18181b;
+    color:white;
+    font-family:Segoe UI,sans-serif;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:#27272a;
+    border-radius:16px;
+    padding:30px;
+    margin-top:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+.question{
+    font-size:28px;
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.answer{
+    display:block;
+    padding:12px;
+    margin:8px 0;
+    background:#3f3f46;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.buttons{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin-top:20px;
+}
+
+button{
+    border:none;
+    border-radius:10px;
+    padding:15px 25px;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.back{
+    background:#3f3f46;
+}
+
+.next{
+    background:#2563eb;
+}
+
+.progress{
+    text-align:center;
+    margin-top:10px;
+    color:#94a3b8;
+}
+
+.bar{
+    text-align:center;
+    color:#60a5fa;
+    margin-top:5px;
+}
+
+.start-screen,
+.result-screen{
+    text-align:center;
+    margin-top:100px;
+}
+
+.result-percent{
+    font-size:60px;
+    color:#60a5fa;
+    font-weight:bold;
+}
+
+.result-text{
+    font-size:32px;
+    margin-top:20px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div id="start" class="start-screen">
+    <h1>Насколько ты нормис?</h1>
+    <button class="next" onclick="startTest()">Начать тест</button>
+</div>
+
+<div id="test" style="display:none">
+
+    <h1>Насколько ты нормис?</h1>
+
+    <div class="progress" id="progress"></div>
+    <div class="bar" id="bar"></div>
+
+    <div class="card">
+
+        <div class="question" id="question"></div>
+
+        <div id="answers"></div>
+
+    </div>
+
+    <div class="buttons">
+        <button class="back" onclick="prevQuestion()">← Назад</button>
+        <button class="next" onclick="nextQuestion()">Следующий →</button>
+    </div>
+
+</div>
+
+<div id="result" class="result-screen" style="display:none"></div>
+
+</div>
+
+<script>
+
+const questionsData = [
+{text:"Я регулярно заказываю товары на Wildberries/Ozon",score:5},
+{text:"Я покупаю дорогие кроссовки известных брендов",score:4},
+{text:"Я часто покупаю товары по рекомендациям блогеров",score:5},
+{text:"Я делаю маникюр регулярно",score:5},
+{text:"Я пользуюсь декоративной косметикой почти каждый день",score:5},
+{text:"Я гетеросексуальна",score:5},
+{text:"Я каждый день смотрю короткие видео (TikTok/Reels)",score:5},
+{text:"Мне важно, как выглядит мой профиль в соцсетях",score:4},
+{text:"Я смотрела Эйфорию/ОСД",score:5},
+{text:"В детстве я смотрела Винкс",score:4},
+{text:"В детстве я увлекалась Монстр Хай",score:5},
+{text:"У меня есть любимый русский исполнитель",score:5},
+{text:"Треки из TikTok часто мне нравятся и я добавляю их в плейлист",score:5},
+{text:"У меня есть подписка Яндекс Плюс",score:5},
+{text:"У меня есть аэрогриль",score:4},
+{text:"Я люблю смотреть хозяевов",score:5},
+{text:"Я люблю смотреть тру-крайм",score:4},
+{text:"Я люблю смотреть шоу «Беременна в 16»",score:4},
+{text:"Иногда я делаю заказ в Золотом Яблоке",score:5},
+{text:"Я сама себе диагностировала СДВГ",score:4},
+{text:"У меня была депрессия или эмоциональное выгорание",score:4},
+{text:"Мой сосед Тоторо и Унесённые призраками — любимые аниме",score:4},
+{text:"Я регулярно смотрю YouTube во время еды",score:5},
+{text:"Я регулярно пользуюсь доставкой продуктов",score:5},
+{text:"В 2020 году я пользовалась помадой Maybelline SuperStay",score:5},
+{text:"У меня есть iPhone",score:5},
+{text:"70% моего гардероба — чёрный цвет",score:4},
+{text:"У меня есть Telegram-канал для знакомых",score:4},
+{text:"Мой никнейм в соцсетях — это имя или фамилия",score:5},
+{text:"У меня нет конкретного хобби",score:4},
+{text:"Я часто пью айс-латте",score:4},
+{text:"Я люблю снимать липсинги (даже если не выкладываю)",score:5},
+{text:"Я ем сырный соус в Макдоналдсе",score:5},
+{text:"Я люблю маски от Darling",score:5},
+{text:"Для макияжа губ я использую продукты типа Vivienne Sabo / KIKO",score:5}
+];
+
+const answers = [
+"Совсем не про меня",
+"Скорее не про меня",
+"Иногда / частично",
+"Скорее про меня",
+"Полностью про меня"
+];
+
+let questions=[];
+let userAnswers=[];
+let current=0;
+
+function shuffle(arr){
+    return arr.sort(()=>Math.random()-0.5);
+}
+
+function startTest(){
+
+    document.getElementById("start").style.display="none";
+    document.getElementById("test").style.display="block";
+
+    questions=shuffle([...questionsData]);
+    userAnswers=new Array(questions.length).fill(0);
+
+    showQuestion();
+}
+
+function showQuestion(){
+
+    document.getElementById("progress").innerText =
+        `${current+1} / ${questions.length}`;
+
+    const percent=Math.floor((current/questions.length)*100);
+
+    document.getElementById("bar").innerText =
+        "█".repeat(Math.floor(percent/10)) +
+        "░".repeat(10-Math.floor(percent/10));
+
+    document.getElementById("question").innerText =
+        questions[current].text;
+
+    let html="";
+
+    answers.forEach((a,index)=>{
+
+        const value=index+1;
+
+        html+=`
+        <label class="answer">
+        <input type="radio"
+               name="answer"
+               value="${value}"
+               ${userAnswers[current]===value?"checked":""}>
+        ${value}. ${a}
+        </label>
+        `;
+    });
+
+    document.getElementById("answers").innerHTML=html;
+}
+
+function nextQuestion(){
+
+    const selected =
+        document.querySelector('input[name="answer"]:checked');
+
+    if(!selected){
+        alert("Выберите ответ");
+        return;
+    }
+
+    userAnswers[current]=Number(selected.value);
+
+    if(current===questions.length-1){
+        showResult();
+        return;
+    }
+
+    current++;
+    showQuestion();
+}
+
+function prevQuestion(){
+
+    const selected =
+        document.querySelector('input[name="answer"]:checked');
+
+    if(selected){
+        userAnswers[current]=Number(selected.value);
+    }
+
+    if(current>0){
+        current--;
+        showQuestion();
+    }
+}
+
+function showResult(){
+
+    let score=0;
+    let maxScore=0;
+
+    for(let i=0;i<questions.length;i++){
+
+        const answer=userAnswers[i];
+        const weight=questions[i].score;
+
+        const normAnswer=(answer-1)/4;
+        const normWeight=weight/5;
+
+        score+=normAnswer*normWeight;
+        maxScore+=normWeight;
+    }
+
+    const percent=Math.round(score/maxScore*100);
+
+    let verdict="";
+
+    if(percent>=80){
+        verdict="🏆 Архинормис";
+    }else if(percent>=60){
+        verdict="✨ Нормис";
+    }else if(percent>=40){
+        verdict="🤔 Частичный нормис";
+    }else{
+        verdict="🦇 Антинормис";
+    }
+
+    document.getElementById("test").style.display="none";
+    document.getElementById("result").style.display="block";
+
+    document.getElementById("result").innerHTML=`
+        <h1>Тест завершён</h1>
+        <div class="result-percent">${percent}%</div>
+        <div class="result-text">${verdict}</div>
+    `;
+}
+
+</script>
+
+</body>
+</html>
